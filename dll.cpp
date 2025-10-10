@@ -388,6 +388,14 @@ static void TeamBalanceCheck() {
 	if (mod_id != TFC_DLL) // Fix for bot_team_balance? [APG]RoboCop[CL]
 		return;
 
+	bool can_balance = false;
+	for(int iBot = 0; iBot < MAX_BOTS; iBot++) {
+		if (bots[iBot].is_used && bots[iBot].num_teams != 1)
+			can_balance = true;
+	}
+	if(!can_balance)
+		return;
+
 	if (bot_team_balance && !bot_bot_balance) {
 		// team 1 has more than team 2?
 		bool done = BotBalanceTeams(1, 2);

@@ -107,6 +107,7 @@ int message_StatusText = 0;
 int message_StatusValue = 0;
 int message_Detpack = 0;
 int message_SecAmmoVal = 0;
+int message_TeamNames = 0;
 
 bool MM_func = false;
 static std::FILE* fp;
@@ -509,6 +510,8 @@ void pfnMessageBegin(const int msg_dest, const int msg_type, const float* pOrigi
 						botMsgFunction = BotClient_Menu;
 					else if (msg_type == message_SecAmmoVal)
 						botMsgFunction = BotClient_TFC_Grens;
+					else if (msg_type == message_TeamNames)
+						botMsgFunction = BotClient_TeamNames;
 				}
 			}
 			else {
@@ -875,6 +878,8 @@ void pfnRegUserMsg_common(const char* pszName, const int msg) {
 		message_Detpack = msg;
 	else if (std::strcmp(pszName, "SecAmmoVal") == 0)
 		message_SecAmmoVal = msg;
+	else if (std::strcmp(pszName, "TeamNames") == 0)
+		message_TeamNames = msg;
 }
 
 int pfnRegUserMsg_post(const char* pszName, const int iSize) {

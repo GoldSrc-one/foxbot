@@ -323,6 +323,7 @@ typedef struct {
 	float fUpdateTime;
 	float fLastRunPlayerMoveTime;
 
+    int num_teams;
 	// things from pev in CBasePlayer...
 	int current_team; // TFC teams numbered 0 - 3
 	int bot_team;     // in TFC teams from 1 - 5 (5 is auto-assign)
@@ -587,7 +588,9 @@ bool VectorsNearerThan(const Vector& r_vOne, const Vector& r_vTwo, double value)
 
 int UTIL_GetTeamColor(edict_t* pEntity);
 
-int UTIL_GetTeam(const edict_t* pEntity);
+int UTIL_GetTeam(const edict_t *pEntity);
+
+bool UTIL_IsAlly(const bot_t *pBot, int otherTeam);
 
 int UTIL_GetFlagsTeam(const edict_t* flag_edict);
 

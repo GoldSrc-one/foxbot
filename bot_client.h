@@ -109,4 +109,5 @@ void BotClient_TFC_SentryAmmo(void* p, int bot_index);
 void BotClient_TFC_DetPack(void* p, int bot_index);
 void BotClient_Menu(void* p, int bot_index);
 void BotClient_TFC_Grens(void* p, int bot_index);
+void BotClient_TeamNames(void *p, int bot_index);
 #endif // BOT_CLIENT_H

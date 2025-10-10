@@ -478,7 +478,7 @@ void BotJobThink(bot_t* pBot) {
 	if (pBot->pEdict->v.playerclass != TFC_CLASS_MEDIC && PlayerHealthPercent(pBot->pEdict) < pBot->trait.health && pBot->enemy.f_lastSeen + 3.0f < pBot->f_think_time) {
 		// just call if the bot isn't going anywhere
 		if (pBot->current_wp == pBot->goto_wp) {
-			if (pBot->currentJob > -1 && pBot->jobType[pBot->currentJob] != JOB_GET_HEALTH && FriendlyClassTotal(pBot->pEdict, TFC_CLASS_MEDIC, false) > 0 && random_long(0, 1000) < 200)
+			if (pBot->currentJob > -1 && pBot->jobType[pBot->currentJob] != JOB_GET_HEALTH && FriendlyClassTotal(pBot, TFC_CLASS_MEDIC, false) > 0 && random_long(0, 1000) < 200)
 				FakeClientCommand(pBot->pEdict, "saveme", nullptr, nullptr);
 		}
 		// if the bot saw a medic recently make it a job to call and wait for them

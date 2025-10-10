@@ -391,6 +391,23 @@ int UTIL_GetTeam(const edict_t* pEntity) {
 	return 0;
 }
 
+extern int team_allies[4];
+bool UTIL_IsAlly(const bot_t* pBot, int otherTeam) {
+    if (pBot->num_teams == 1)
+        return false;
+
+	if (otherTeam == -1)
+        return false;
+    
+	if (pBot->current_team == otherTeam)
+        return true;
+
+	if (team_allies[pBot->current_team] & 1 << otherTeam)
+        return true;
+
+	return false;
+}
+
 // Give this function a pointer to a flag entity and it will return which
 // team the flag belongs to(0 - 3).
 // This function may be only appropriate for TFC flags.

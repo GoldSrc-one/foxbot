@@ -182,7 +182,7 @@ void BotCheckTeamplay() {
 // This function can be used to report the number of players using the specified class
 // on the specified players team, or a team allied to them.
 // You'll be cheating if you use this function on an enemy team.  >:-O
-int FriendlyClassTotal(const edict_t *pEdict, const int specifiedClass, const bool ignoreSelf) {
+int FriendlyClassTotal(const bot_t *pBot, const int specifiedClass, const bool ignoreSelf) {
    if (!checked_teamplay) // check for team play...
       BotCheckTeamplay();
 
@@ -190,7 +190,6 @@ int FriendlyClassTotal(const edict_t *pEdict, const int specifiedClass, const bo
    if (is_team_play <= 0 || mod_id != TFC_DLL)
       return 0;
 
-   const int my_team = UTIL_GetTeam(pEdict);
    int classTotal = 0;
 
    // search the world for players...
@@ -200,14 +199,14 @@ int FriendlyClassTotal(const edict_t *pEdict, const int specifiedClass, const bo
       // skip invalid players
       if (pPlayer && !pPlayer->free) {
          // check the specified player if instructed to do so
-         if (pPlayer == pEdict) {
+         if (pPlayer == pBot->pEdict) {
             if (pPlayer->v.playerclass == specifiedClass && !ignoreSelf)
                ++classTotal;
          } else if (IsAlive(pPlayer) && pPlayer->v.playerclass == specifiedClass) {
             const int player_team = UTIL_GetTeam(pPlayer);
 
             // add another if the player is a teammate or ally
-            if (my_team == player_team || team_allies[my_team] & 1 << player_team)
+            if (UTIL_IsAlly(pBot, player_team))
                ++classTotal;
          }
       }
@@ -270,7 +269,7 @@ static void BotFeigningEnemyCheck(bot_t *pBot) {
 
          // ignore allied players
          const int player_team = UTIL_GetTeam(pPlayer);
-         if (player_team > -1 && (player_team == pBot->current_team || team_allies[pBot->current_team] & 1 << player_team))
+         if (UTIL_IsAlly(pBot, player_team))
             continue;
 
          // is this enemy near and facing away from the bot?
@@ -485,7 +484,7 @@ static edict_t *BotFindEnemy(bot_t *pBot) {
 
             // don't target your own team's sentry guns...
             // don't target allied sentry guns either...
-            if (pBot->current_team == sentry_team || team_allies[pBot->current_team] & 1 << sentry_team)
+            if (UTIL_IsAlly(pBot, sentry_team))
                continue;
 
             vecEnd = pent->v.origin + pent->v.view_ofs;
@@ -508,7 +507,7 @@ static edict_t *BotFindEnemy(bot_t *pBot) {
                continue;
             int sentry_team = pent->v.team - 1;
             // don't target friendly sentry guns...
-            if (pBot->current_team == sentry_team || team_allies[pBot->current_team] & 1 << sentry_team)
+            if (UTIL_IsAlly(pBot, sentry_team))
                continue;
 
             // ntf_capture_mg 1 = ignore, we can cap it
@@ -580,7 +579,7 @@ static edict_t *BotFindEnemy(bot_t *pBot) {
                player_team = UTIL_GetTeamColor(pPlayer);
 
                // ignore all enemies...
-               if (pBot->current_team != player_team && !(team_allies[pBot->current_team] & 1 << player_team))
+               if (!UTIL_IsAlly(pBot, player_team))
                   continue;
 
                // check if the player needs to be healed
@@ -622,7 +621,7 @@ static edict_t *BotFindEnemy(bot_t *pBot) {
 
             // ignore sniper spots from your team
             // and ignore sniper spots from your allies
-            if (sniper_team == pBot->current_team || team_allies[pBot->current_team] & 1 << sniper_team)
+            if (UTIL_IsAlly(pBot, sniper_team))
                continue;
 
             // ok... check distance to sniper spot and see if its nearish
@@ -648,7 +647,7 @@ static edict_t *BotFindEnemy(bot_t *pBot) {
             // don't target your own team's sentry guns...
             // don't target allied sentry guns either...
             vecEnd = pent->v.origin + pent->v.view_ofs; // + Vector(0,0,16);
-            if (pBot->current_team == sentry_team || team_allies[pBot->current_team] & 1 << sentry_team) {
+            if (UTIL_IsAlly(pBot, sentry_team)) {
                if (VectorsNearerThan(pent->v.origin, pEdict->v.origin, 300.0) && pEdict->v.playerclass != TFC_CLASS_ENGINEER && FInViewCone(vecEnd, pEdict) && FVisible(vecEnd, pEdict)) {
                   // ntf_feature_antigren
                   char *cvar_ntf_feature_antigren = const_cast<char *>(CVAR_GET_STRING("ntf_feature_antigren"));
@@ -685,7 +684,7 @@ static edict_t *BotFindEnemy(bot_t *pBot) {
             int sentry_team = pent->v.team - 1;
 
             // don't target friendly sentry guns...
-            if (pBot->current_team == sentry_team || team_allies[pBot->current_team] & 1 << sentry_team)
+            if (UTIL_IsAlly(pBot, sentry_team))
                continue;
 
             // ntf_capture_mg 1 = ignore, we can cap it
@@ -748,13 +747,9 @@ static edict_t *BotFindEnemy(bot_t *pBot) {
                player_team = UTIL_GetTeam(pPlayer);
 
                // don't target your teammates...
-               if (pBot->current_team == player_team)
-                  player_is_ally = true;
+               player_is_ally = UTIL_IsAlly(pBot, player_team);
 
                if (mod_id == TFC_DLL) {
-                  // don't target your allies either...
-                  if (team_allies[pBot->current_team] & 1 << player_team)
-                     player_is_ally = true;
 
                   // so disguised spys wont attack other disguised spys
                   if (pEdict->v.playerclass == TFC_CLASS_SPY && pPlayer->v.playerclass == TFC_CLASS_SPY && pBot->current_team == UTIL_GetTeamColor(pPlayer))
@@ -1221,7 +1216,7 @@ void BotShootAtEnemy(bot_t *pBot) {
 
       // don't target your teammates.
       // and don't target your allies either...
-      if (pBot->current_team == player_team || team_allies[pBot->current_team] & 1 << player_team) {
+      if (UTIL_IsAlly(pBot, player_team)) {
          pBot->strafe_mod = STRAFE_MOD_HEAL;
          return;
       }
@@ -1647,7 +1642,7 @@ bool BotFireWeapon(const Vector &v_enemy, bot_t *pBot, const int weapon_choice) 
                const int player_team = UTIL_GetTeam(pBot->enemy.ptr);
 
                // only heal your teammates or allies...
-               if ((pBot->current_team == player_team || team_allies[pBot->current_team] & 1 << player_team) && (iId != TF_WEAPON_MEDIKIT && iId != TF_WEAPON_SPANNER)) {
+               if (UTIL_IsAlly(pBot, player_team) && (iId != TF_WEAPON_MEDIKIT && iId != TF_WEAPON_SPANNER)) {
                   pBot->strafe_mod = STRAFE_MOD_HEAL;
                   // return false;  // don't "fire" unless weapon is medikit
                   use_primary = false;
@@ -2265,7 +2260,7 @@ void BotCheckForMultiguns(bot_t *pBot, float nearestdistance, edict_t *pNewEnemy
             continue;
 
          // don't target friendly sentry guns...
-         if (pBot->current_team == sentry_team || team_allies[pBot->current_team] & 1 << sentry_team)
+         if (UTIL_IsAlly(pBot, sentry_team))
             continue;
 
          // is this the closest visible sentry gun?

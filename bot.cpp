@@ -78,7 +78,6 @@ struct TeamLayout {
 
 // team data /////////////////////////
 extern int RoleStatus[];
-extern int team_allies[4];
 extern int max_team_players[4];
 extern int team_class_limits[4];
 extern int spawnAreaWP[4]; // used for tracking the areas where each team spawns
@@ -916,6 +915,8 @@ void BotCreate(edict_t* pPlayer, const char* arg1, const char* arg2, const char*
 	pBot->bot_start2 = 1;
 	pBot->bot_start3 = 0;
 
+	pBot->num_teams = 2;
+
 	pBot->bot_class = -1;   // not decided yet
 	pBot->bot_team = -1;    // not decided yet
 	pBot->current_team = 0; // sane value, will be set properly once bot has spawned
@@ -1295,7 +1296,7 @@ void BotFindItem(bot_t* pBot) {
 
 					// if it's an enemy teleporter maybe set up a job to attack it
 					const int TeleportTeam = BotTeamColorCheck(pent);
-					if (pBot->current_team != TeleportTeam && !(team_allies[pBot->current_team] & 1 << TeleportTeam)) {
+					if (!UTIL_IsAlly(pBot, TeleportTeam)) {
 						newJob = InitialiseNewJob(pBot, JOB_ATTACK_TELEPORT);
 						if (newJob != nullptr) {
 							newJob->object = pent;
@@ -1633,7 +1634,7 @@ edict_t* BotContactThink(bot_t* pBot) {
 			if (vang.y < 0.0f)
 				vang.y += 360.0f;
 
-			if (!((UTIL_GetTeamColor(pBot->pEdict) == UTIL_GetTeamColor(pPlayer) || team_allies[pBot->current_team] & 1 << UTIL_GetTeam(pPlayer)) && pPlayer == pBot->enemy.ptr)) {
+			if (!(UTIL_IsAlly(pBot, UTIL_GetTeam(pPlayer)) && pPlayer == pBot->enemy.ptr)) {
 				Vector vecEnd = pPlayer->v.origin + pPlayer->v.view_ofs;
 
 				if (FInViewCone(vecEnd, pBot->pEdict) && FVisible(vecEnd, pBot->pEdict)) {
@@ -2150,7 +2151,7 @@ static void BotAttackerCheck(bot_t* pBot) {
 				const int player_team = UTIL_GetTeam(pPlayer);
 
 				// don't target your teammates or allies
-				if (pBot->current_team == player_team || team_allies[pBot->current_team] & 1 << player_team)
+				if (UTIL_IsAlly(pBot, player_team))
 					continue;
 			}
 
@@ -2646,7 +2647,7 @@ static void BotGrenadeAvoidance(bot_t* pBot) {
 			const int owner_team = UTIL_GetTeam(pent->v.owner);
 
 			// try to get over or around the pipebomb if an enemy fired it
-			if (owner_team != pBot->current_team && !(team_allies[pBot->current_team] & 1 << owner_team)) {
+			if (!UTIL_IsAlly(pBot, owner_team)) {
 				//	UTIL_HostSay(pBot->pEdict, 0, "enemy PIPEBOMB spotted!");//DebugMessageOfDoom!
 
 				entity_origin = pent->v.origin;
@@ -3314,7 +3315,7 @@ static bool BotChooseCounterClass(bot_t* pBot) {
 	// choose the Spy class if the bot was killed by a Sentry Gun and the team
 	// has few spies already
 	if (pBot->killer_edict == pBot->lastEnemySentryGun && !FNullEnt(pBot->lastEnemySentryGun)) {
-		if (FriendlyClassTotal(pBot->pEdict, TFC_CLASS_SPY, false) < 1)
+		if (FriendlyClassTotal(pBot, TFC_CLASS_SPY, false) < 1)
 			new_class = 8;
 	}
 	else // enemy is not a sentry gun
@@ -3325,25 +3326,25 @@ static bool BotChooseCounterClass(bot_t* pBot) {
 			// Snipers are often a serious threat so pick Sniper or HWGuy
 			// to fight back against them
 			if (pBot->killer_edict->v.playerclass == TFC_CLASS_SNIPER) {
-				if (FriendlyClassTotal(pBot->pEdict, TFC_CLASS_SNIPER, false) < 2) {
+				if (FriendlyClassTotal(pBot, TFC_CLASS_SNIPER, false) < 2) {
 					new_class = 2;
 					//	UTIL_HostSay(pBot->pEdict, 0, "Counter classing a Sniper"); //DebugMessageOfDoom
 				}
-				else if (FriendlyClassTotal(pBot->pEdict, TFC_CLASS_HWGUY, false) < 1) {
+				else if (FriendlyClassTotal(pBot, TFC_CLASS_HWGUY, false) < 1) {
 					new_class = 6;
 					//	UTIL_HostSay(pBot->pEdict, 0, "Counter classing a Sniper"); //DebugMessageOfDoom
 				}
 			}
 			// a good counter-class for enemy Engineers is the sneaky Spy
 			else if (pBot->killer_edict->v.playerclass == TFC_CLASS_ENGINEER) {
-				if (FriendlyClassTotal(pBot->pEdict, TFC_CLASS_SPY, false) < 1) {
+				if (FriendlyClassTotal(pBot, TFC_CLASS_SPY, false) < 1) {
 					new_class = 8;
 					//	UTIL_HostSay(pBot->pEdict, 0, "Counter classing an Engineer"); //DebugMessageOfDoom
 				}
 			}
 			// not enjoying bio-chemical warfare?  Pick the guy with an antidote
 			else if (pBot->killer_edict->v.playerclass == TFC_CLASS_MEDIC) {
-				if (FriendlyClassTotal(pBot->pEdict, TFC_CLASS_MEDIC, false) < 1) {
+				if (FriendlyClassTotal(pBot, TFC_CLASS_MEDIC, false) < 1) {
 					new_class = 5;
 					//	UTIL_HostSay(pBot->pEdict, 0, "Counter classing a Medic"); //DebugMessageOfDoom
 				}
@@ -3416,7 +3417,7 @@ static bool BotChooseCounterClass(bot_t* pBot) {
 // It returns true if the bot switched class to Demoman.
 static bool BotDemomanNeededCheck(bot_t* pBot) {
 	// give up if there is a demoman on the bots team already
-	if (pBot->pEdict->v.playerclass == TFC_CLASS_DEMOMAN || FriendlyClassTotal(pBot->pEdict, TFC_CLASS_DEMOMAN, false) > 0)
+	if (pBot->pEdict->v.playerclass == TFC_CLASS_DEMOMAN || FriendlyClassTotal(pBot, TFC_CLASS_DEMOMAN, false) > 0)
 		return false;
 
 	// Check if any more demoman are allowed on this map.
@@ -3460,7 +3461,7 @@ bool SpyAmbushAreaCheck(const bot_t* pBot, Vector& r_wallVector) {
 
 			// ignore allied players
 			const int player_team = UTIL_GetTeam(pPlayer);
-			if (player_team > -1 && (player_team == pBot->current_team || team_allies[pBot->current_team] & 1 << player_team))
+			if (UTIL_IsAlly(pBot, player_team))
 				continue;
 
 			if (VectorsNearerThan(pPlayer->v.origin, pBot->pEdict->v.origin, 1200.0)) {
@@ -4002,7 +4003,7 @@ static void BotCombatThink(bot_t* pBot) {
 		pBot->f_duck_time = pBot->f_think_time + 0.3f;
 
 	// ignore allies
-	if (pBot->current_team == enemy_team || team_allies[pBot->current_team] & 1 << enemy_team)
+	if (UTIL_IsAlly(pBot, enemy_team))
 		return;
 
 	const int ThreatLevel = guessThreatLevel(pBot);

@@ -1021,6 +1021,13 @@ void BotClient_TFC_Grens(void* p, const int bot_index) {
 	}
 }
 
+void BotClient_TeamNames(void *p, const int bot_index) {
+   if (g_state == 0) {
+      bots[bot_index].num_teams = *static_cast<int *>(p);
+   }
+   g_state++;
+}
+
 #if FALSE // don't compile this function yet, it's not reliable enough
 // This function can update the team scores data.
 // This function is unreliable because the names of the teams can change.

@@ -1766,7 +1766,7 @@ int JobDisguise(bot_t* pBot) {
    // check if the Spy succeeded or failed at disguising
    if (pBot->disguise_state == DISGUISE_UNDERWAY) {
       // check if the disguise completed
-      if (pBot->current_team != UTIL_GetTeamColor(pBot->pEdict))
+      if (!UTIL_IsAlly(pBot, UTIL_GetTeamColor(pBot->pEdict)))
          pBot->disguise_state = DISGUISE_COMPLETE;
       // check if disguise took so long it must have failed
       else if (pBot->f_disguise_time < pBot->f_think_time)
@@ -1774,7 +1774,7 @@ int JobDisguise(bot_t* pBot) {
    }
    else if (pBot->disguise_state == DISGUISE_COMPLETE) {
       // check if the Spy is still disguised
-      if (pBot->current_team == UTIL_GetTeamColor(pBot->pEdict))
+      if (UTIL_IsAlly(pBot, UTIL_GetTeamColor(pBot->pEdict)))
          pBot->disguise_state = DISGUISE_NONE;
       else
          return JOB_TERMINATED; // bot is disguised - job done

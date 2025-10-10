@@ -1266,7 +1266,7 @@ void BotFindItem(bot_t* pBot) {
 					//	can_pickup = true;
 				} // [APG]RoboCop[CL]
 				else if (std::strcmp("building_sentrygun", item_name) == 0) {
-					if (pEdict->v.playerclass != TFC_CLASS_ENGINEER || pBot->m_rgAmmo[weapon_defs[TF_WEAPON_SPANNER].iAmmo1] < 140 || pBot->current_team != UTIL_GetTeam(pent))
+					if (pEdict->v.playerclass != TFC_CLASS_ENGINEER || pBot->m_rgAmmo[weapon_defs[TF_WEAPON_SPANNER].iAmmo1] < 140 || !UTIL_IsAlly(pBot, UTIL_GetTeam(pent)))
 						continue;
 
 					static char modelName[24]; // static for speed reasons
@@ -2492,7 +2492,7 @@ edict_t* BotAllyAtVector(const bot_t* pBot, const Vector& r_vecOrigin, const flo
 		edict_t* pPlayer = INDEXENT(i);
 
 		if (pPlayer != nullptr && !pPlayer->free && pPlayer != pBot->pEdict // ignore this bot
-			&& UTIL_GetTeam(pPlayer) == pBot->current_team && VectorsNearerThan(pPlayer->v.origin, r_vecOrigin, range)) {
+			&& UTIL_IsAlly(pBot, UTIL_GetTeam(pPlayer)) && VectorsNearerThan(pPlayer->v.origin, r_vecOrigin, range)) {
 			if (stationaryOnly) {
 				if (pPlayer->v.velocity.Length() < 1.0f)
 					return pPlayer;
@@ -2522,7 +2522,7 @@ short BotTeammatesNearWaypoint(const bot_t* pBot, const int waypoint) {
 		// Is this player a bot teammate who is
 		// heading towards the indicated waypoint?
 		if (bot.is_used && &bot != pBot // make sure the player isn't THIS bot
-			 && bot.current_wp == waypoint && bot.current_team == pBot->current_team) {
+			 && bot.current_wp == waypoint && UTIL_IsAlly(pBot, bot.current_team)) {
 			// if this player is nearer than the bot add them to the total
 			if (VectorsNearerThan(bot.pEdict->v.origin, waypoints[waypoint].origin, my_distance))
 				++total_present;
@@ -2546,7 +2546,7 @@ bot_t* BotDefenderAtWaypoint(const bot_t* pBot, const int waypoint, const float 
 		// indicated waypoint?
 		if (bot.is_used     // make sure this player is a bot
 			 && &bot != pBot // make sure the player isn't THIS bot
-			 && bot.goto_wp == waypoint && bot.mission == ROLE_DEFENDER && bot.current_team == pBot->current_team) {
+			 && bot.goto_wp == waypoint && bot.mission == ROLE_DEFENDER && UTIL_IsAlly(pBot, bot.current_team)) {
 			// if this player is near enough return who they are
 			if (VectorsNearerThan(bot.pEdict->v.origin, waypoints[waypoint].origin, range))
 				return &bot;

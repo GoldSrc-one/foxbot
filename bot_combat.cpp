@@ -376,7 +376,7 @@ void BotEnemyCheck(bot_t *pBot) {
       const Vector vecEnd = pBot->enemy.ptr->v.origin + pBot->enemy.ptr->v.view_ofs;
 
       // anti friendly fire
-      if (pBot->pEdict->v.playerclass != TFC_CLASS_MEDIC && pBot->pEdict->v.playerclass != TFC_CLASS_ENGINEER && (pBot->pEdict->v.team == pBot->enemy.ptr->v.team || BotTeamColorCheck(pBot->enemy.ptr) == pBot->current_team)) {
+      if (pBot->pEdict->v.playerclass != TFC_CLASS_MEDIC && pBot->pEdict->v.playerclass != TFC_CLASS_ENGINEER && (UTIL_IsAlly(pBot, UTIL_GetTeam(pBot->enemy.ptr)) || UTIL_IsAlly(pBot, BotTeamColorCheck(pBot->enemy.ptr)))) {
          if (pBot->enemy.ptr->v.playerclass != TFC_CLASS_MEDIC)
             pBot->enemy.ptr = nullptr;
       } else if (pBot->enemy.ptr->v.flags & FL_KILLME) {
@@ -752,7 +752,7 @@ static edict_t *BotFindEnemy(bot_t *pBot) {
                if (mod_id == TFC_DLL) {
 
                   // so disguised spys wont attack other disguised spys
-                  if (pEdict->v.playerclass == TFC_CLASS_SPY && pPlayer->v.playerclass == TFC_CLASS_SPY && pBot->current_team == UTIL_GetTeamColor(pPlayer))
+                  if (pEdict->v.playerclass == TFC_CLASS_SPY && pPlayer->v.playerclass == TFC_CLASS_SPY && UTIL_IsAlly(pBot, UTIL_GetTeamColor(pPlayer)))
                      continue;
                }
             }
@@ -882,7 +882,7 @@ static bool BotSpyDetectCheck(bot_t *pBot, edict_t *pNewEnemy) {
    // the bot has encountered a new enemy
    if (pNewEnemy != nullptr && pNewEnemy != pBot->suspectedSpy) {
       // if the enemy is not disguised/feigning forget the last Spy
-      if (pBot->current_team != UTIL_GetTeamColor(pNewEnemy) && pNewEnemy->v.deadflag != 5) {
+      if (!UTIL_IsAlly(pBot, UTIL_GetTeamColor(pNewEnemy)) && pNewEnemy->v.deadflag != 5) {
          pBot->suspectedSpy = nullptr;
          pBot->f_suspectSpyTime = 0.0f;
          return true;
@@ -944,7 +944,7 @@ static bool BotSpyDetectCheck(bot_t *pBot, edict_t *pNewEnemy) {
       return true;
    }
    // the bot has decided to target it's suspected Spy
-   if ((pNewEnemy == pBot->suspectedSpy && pBot->f_suspectSpyTime < pBot->f_think_time) || (pBot->current_team != UTIL_GetTeamColor(pNewEnemy) && pNewEnemy->v.deadflag != 5)) {
+   if ((pNewEnemy == pBot->suspectedSpy && pBot->f_suspectSpyTime < pBot->f_think_time) || (!UTIL_IsAlly(pBot, UTIL_GetTeamColor(pNewEnemy)) && pNewEnemy->v.deadflag != 5)) {
       // keep the memory of this experience fresh
       pBot->f_suspectSpyTime = pBot->f_think_time - 0.5f;
 
@@ -1208,7 +1208,7 @@ void BotShootAtEnemy(bot_t *pBot) {
             pBot->strafe_mod = STRAFE_MOD_HEAL;
             // select the best weapon to use at this distance and fire...
             BotFireWeapon(v_enemy, pBot, 0);
-            if (UTIL_GetTeamColor(pBot->enemy.ptr) == pBot->current_team)
+            if (UTIL_IsAlly(pBot, UTIL_GetTeamColor(pBot->enemy.ptr)))
                return;
          }
       }
@@ -1887,7 +1887,7 @@ int BotNadeHandler(bot_t *pBot, bool timed, const char newNadeType) {
       const int player_team = UTIL_GetTeam(pBot->enemy.ptr);
 
       // don't throw at teammates
-      if (player_team == pBot->current_team)
+      if (UTIL_IsAlly(pBot, player_team))
          return rtnValue;
 
       // prime a grenade if we don't currently have one primed

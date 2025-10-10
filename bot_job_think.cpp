@@ -562,7 +562,7 @@ void BotJobThink(bot_t* pBot) {
 		UTIL_SelectItem(pBot->pEdict, "tf_weapon_supershotgun");
 		// time for a disguise?
 		if (pBot->enemy.f_lastSeen + 2.0f < pBot->f_think_time) {
-			if (pBot->current_team == UTIL_GetTeamColor(pBot->pEdict)) {
+         if (UTIL_IsAlly(pBot, UTIL_GetTeamColor(pBot->pEdict))) {
 				newJob = InitialiseNewJob(pBot, JOB_DISGUISE);
 				if (newJob != nullptr && SubmitNewJob(pBot, JOB_DISGUISE, newJob) == true)
 					return;

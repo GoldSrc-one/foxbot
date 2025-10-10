@@ -3700,7 +3700,7 @@ void BotThink(bot_t* pBot) {
 		if (pBot->bot_start2 > 0 && static_cast<int>(pBot->bot_start3) == 0)
 			pBot->bot_start3 = pBot->f_think_time;
 
-		if (pBot->bot_start3 < pBot->f_think_time - 6 && static_cast<int>(pBot->bot_start3) != 0) {
+		if (pBot->bot_start3 < pBot->f_think_time - (CVAR_GET_FLOAT("mp_roundtime") * 60 + 6) && static_cast<int>(pBot->bot_start3) != 0) {
 			if (pBot->bot_start2 > 1) {
 				pBot->bot_team = 5;
 				pBot->bot_class = -1;

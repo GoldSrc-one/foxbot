@@ -855,6 +855,7 @@ void BotCreate(edict_t* pPlayer, const char* arg1, const char* arg2, const char*
 	pBot->killer_edict = nullptr;
 	pBot->killed_edict = nullptr;
 	pBot->lastEnemySentryGun = nullptr;
+    pBot->pInflictor = nullptr;
 	pBot->mission = ROLE_ATTACKER;
 	pBot->lockMission = false;
 	pBot->tpEntrance = nullptr;

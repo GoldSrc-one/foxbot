@@ -439,6 +439,11 @@ void BotEnemyCheck(bot_t *pBot) {
 
    // now scan the visible area around the bot for new enemies
    edict_t *new_enemy = BotFindEnemy(pBot);
+   // if no players are around, target the inficting monster
+   if (new_enemy == nullptr && !FNullEnt(pBot->pInflictor) && IsAlive(pBot->pInflictor) && (pBot->pInflictor->v.flags & FL_MONSTER)) {
+      new_enemy = pBot->pInflictor;
+      pBot->pInflictor = nullptr;
+   }
    if (new_enemy != nullptr && new_enemy != pBot->enemy.ptr) {
       pBot->enemy.ptr = new_enemy;
       pBot->enemy.f_firstSeen = pBot->f_think_time;

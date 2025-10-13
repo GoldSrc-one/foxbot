@@ -393,6 +393,7 @@ typedef struct {
 	enemyStruct enemy;           // structure for the bots current or last seen enemy
 	edict_t* lastEnemySentryGun; // last enemy sentry gun targetted
 	float f_enemy_check_time;    // used to stop the bots checking for enemies too frequently.
+    edict_t *pInflictor;         // who hurt the player
 
 	short visEnemyCount;         // current number of enemies the bot can see nearby
 	short visAllyCount;          // current number of friendly players the bot can see nearby(including itself)

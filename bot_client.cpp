@@ -555,6 +555,8 @@ void BotClient_Valve_Damage(void* p, const int bot_index) {
 				}
 			}
 
+            bots[bot_index].pInflictor = bots[bot_index].pEdict->v.dmg_inflictor;
+
 			// ignore certain types of damage(e.g. environmental)
 			if (damage_bits & IGNORE_DAMAGE)
 				return;

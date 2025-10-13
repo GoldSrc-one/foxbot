@@ -6038,6 +6038,7 @@ static void ClearKickedBotsData(const int botIndex, const bool eraseBotsName) {
 	// the unfeasibly scary pointers of great doom!
 	bots[botIndex].enemy.ptr = nullptr;
 	bots[botIndex].lastEnemySentryGun = nullptr;
+	bots[botIndex].pInflictor = nullptr;
 	bots[botIndex].suspectedSpy = nullptr;
 	bots[botIndex].killer_edict = nullptr;
 	bots[botIndex].killed_edict = nullptr;

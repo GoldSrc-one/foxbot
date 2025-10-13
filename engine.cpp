@@ -153,6 +153,8 @@ void pfnRemoveEntity(edict_t* e) {
 				bot.lastEnemySentryGun = nullptr;
 			if (bot.enemy.ptr == e)
 				bot.enemy.ptr = nullptr;
+			if (bot.pInflictor == e)
+				bot.pInflictor = nullptr;
 
 			if (bot.pEdict->v.playerclass == TFC_CLASS_ENGINEER) {
 				if (bot.sentry_edict == e) {

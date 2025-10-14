@@ -3152,7 +3152,7 @@ static void WaypointRouteInit() {
 				// Put the waypoint index, and the team # into the list.
 				RJPoints[RJIndex][0] = i;
 				RJPoints[RJIndex][1] = waypoints[index].flags & W_FL_TEAM;
-				teamCount[RJPoints[RJIndex][1] - 1]++;
+				teamCount[RJPoints[RJIndex][1]]++;
 				RJIndex++;
 			}
 			else {

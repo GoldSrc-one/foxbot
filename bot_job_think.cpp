@@ -102,7 +102,7 @@ static jobFunctions_struct jf[JOB_TYPE_TOTAL] = {
 	{ assess_JobAvoidEnemy, JobAvoidEnemy }, { assess_JobAvoidAreaDamage, JobAvoidAreaDamage },
 	{ assess_JobInfectedAttack, JobInfectedAttack }, { assess_JobBinGrenade, JobBinGrenade },
 	{ assess_JobDrownRecover, JobDrownRecover }, { assess_JobMeleeWarrior, JobMeleeWarrior },
-	{ assess_JobGraffitiArtist, JobGraffitiArtist },
+	{ assess_JobGraffitiArtist, JobGraffitiArtist }, { assess_JobCSBomb, JobCSBomb },
 };
 
 // list of essential data for all known job types
@@ -124,6 +124,7 @@ jobList_struct jl[JOB_TYPE_TOTAL] = {
 	{ 310, "JOB_AVOID_ENEMY" }, { 720, "JOB_AVOID_AREA_DAMAGE" },
 	{ 690, "JOB_INFECTED_ATTACK" }, { 800, "JOB_BIN_GRENADE" },
 	{ 710, "JOB_DROWN_RECOVER" }, { 240, "JOB_MELEE_WARRIOR" }, { 250, "JOB_GRAFFITI_ARTIST" },
+	{ 700, "JOB_CS_BOMB" }
 };
 
 // This function clears the specified bots job buffer, and thus should

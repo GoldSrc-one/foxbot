@@ -2231,6 +2231,21 @@ void BotSoundSense(edict_t* pEdict, const char* pszSample, const float fVolume) 
 	if (pEdict == nullptr)
 		return;
 
+	if (std::strncmp("weapons/c4_beep", pszSample, 15) == 0) {
+		for (bot_t &bot : bots) {
+			if (!bot.is_used)
+				continue;
+			
+            job_struct *newJob = InitialiseNewJob(&bot, JOB_CS_BOMB);
+			if (newJob != nullptr) {
+				newJob->waypoint = WaypointFindNearest_V(pEdict->v.origin, 256, bot.current_team);
+				newJob->object = pEdict;
+				newJob->origin = pEdict->v.origin;
+				SubmitNewJob(&bot, JOB_CS_BOMB, newJob);
+			}
+		}
+	}
+
 	const int sourceTeam = UTIL_GetTeam(pEdict);
 	if (sourceTeam == -1)
 		return;
@@ -2636,7 +2651,7 @@ static void BotGrenadeAvoidance(bot_t* pBot) {
 			entity_origin = pent->v.origin;
 			if (FInViewCone(entity_origin, pBot->pEdict) && FVisible(entity_origin, pBot->pEdict)) {
 				if (pBot->trait.aggression < 33 || static_cast<int>(pBot->pEdict->v.health) > 70)
-					pBot->pEdict->v.button |= IN_JUMP; // try jumping the grenade anyway
+               pBot->pEdict->v.button |= IN_JUMP; // try jumping the grenade anyway
 				else                                  // low health or aggression - retreat!
 				{
 					avoid_action = avoid_retreat;
@@ -2661,9 +2676,9 @@ static void BotGrenadeAvoidance(bot_t* pBot) {
 		else if (std::strncmp("tf_weapon_caltrop", classname, 29) == 0 && pBot->bot_skill < 3) {
 			entity_origin = pent->v.origin;
 			if (FInViewCone(entity_origin, pBot->pEdict) && FVisible(entity_origin, pBot->pEdict))
-				pBot->pEdict->v.button |= IN_JUMP;
+            pBot->pEdict->v.button |= IN_JUMP;
+         }
 		}
-	}
 
 	if (avoid_action == avoid_retreat && threatEnt != nullptr) {
 		job_struct* newJob = InitialiseNewJob(pBot, JOB_AVOID_AREA_DAMAGE);
@@ -4021,12 +4036,12 @@ static void BotCombatThink(bot_t* pBot) {
 			// jump a lot if the enemy is a nearby soldier or pyro
 			// (extra annoying for the enemy!)
 			if (pBot->f_periodicAlert1 < pBot->f_think_time && (pBot->enemy.ptr->v.playerclass == TFC_CLASS_SOLDIER || pBot->enemy.ptr->v.playerclass == TFC_CLASS_PYRO) && pBot->bot_skill < 2 && pBot->enemy.f_seenDistance < 800.0f)
-				pBot->pEdict->v.button |= IN_JUMP;
+            pBot->pEdict->v.button |= IN_JUMP;
 
 			// duck/jump randomly in battle
 			if (pBot->f_periodicAlertFifth < pBot->f_think_time && random_long(0, 120) < pBot->trait.aggression) {
 				if (random_long(1, 1000) < 501)
-					pBot->pEdict->v.button |= IN_JUMP;
+               pBot->pEdict->v.button |= IN_JUMP;
 				else if (pBot->f_duck_time < pBot->f_think_time)
 					pBot->f_duck_time = pBot->f_think_time + 0.25f;
 			}

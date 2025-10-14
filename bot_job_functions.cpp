@@ -3588,3 +3588,51 @@ int JobGraffitiArtist(bot_t* pBot) {
 
    return JOB_UNDERWAY;
 }
+
+// This function handles bot behaviour for the JOB_CS_BOMB job.
+// i.e. the bot will defend or defuse the bomb.
+int JobCSBomb(bot_t *pBot) {
+   job_struct *job_ptr = &pBot->job[pBot->currentJob];
+
+   edict_t *pBomb = job_ptr->object;
+   if (FNullEnt(pBomb) || pBomb->free || (pBomb->v.flags & FL_KILLME))
+      return JOB_TERMINATED;
+
+   // phase zero - are we defending or defusing
+   if (job_ptr->phase == 0) {
+      bool allyBomb = UTIL_IsAlly(pBot, UTIL_GetTeam(pBomb->v.owner));
+      job_ptr->phase = allyBomb ? -1 : 1;
+   }
+
+   // navigete to the bomb
+   pBot->goto_wp = job_ptr->waypoint;
+   if (pBot->current_wp == job_ptr->waypoint) {
+      if (pBot->f_use_button_time >= pBot->f_think_time)
+         BotNavigateWaypointless(pBot);
+   } else {
+      // bomb cannot be reached
+      if (!BotNavigateWaypoints(pBot, false))
+         return JOB_TERMINATED;
+   }
+
+   // phase 1 - defuse
+   if (job_ptr->phase == 1) {
+      // look at the bomb
+      if (pBot->current_wp == job_ptr->waypoint)
+         BotSetFacing(pBot, pBomb->v.origin);
+
+      // duck if getting close
+      if (VectorsNearerThan(pBot->pEdict->v.origin, pBomb->v.origin, 128.0f)) {
+         pBot->pEdict->v.button |= IN_DUCK;
+         pBot->f_duck_time = pBot->f_think_time + 0.1f;
+      }
+
+      // use if very close and in view
+      if (VectorsNearerThan(pBot->pEdict->v.origin, pBomb->v.origin, 64.0f) && BotInFieldOfView(pBot, pBomb->v.origin - (pBot->pEdict->v.origin + pBot->pEdict->v.view_ofs)) < 15) {
+         pBot->pEdict->v.button |= IN_USE;
+         pBot->f_use_button_time = pBot->f_think_time + 0.1f;
+      }
+   }
+
+   return JOB_UNDERWAY;
+}

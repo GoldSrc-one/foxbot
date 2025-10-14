@@ -76,6 +76,7 @@ enum knownJobTypes : std::int8_t {
 	JOB_DROWN_RECOVER,     // swim to surface when drowning
 	JOB_MELEE_WARRIOR,     // daft job for attacking enemies with melee weapons only
 	JOB_GRAFFITI_ARTIST,   // go spray a wall nearby for the heck of it
+	JOB_CS_BOMB,           // defend or defuse CS bomb
 
 	// The constant below is not a job type, but is used to keep track of
 	// the number of job types in the list.

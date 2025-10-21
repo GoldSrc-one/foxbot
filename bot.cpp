@@ -462,11 +462,14 @@ void BotPickName(char* name_buffer) {
 		// is there a player with this name?
 		for (index = 1; index <= gpGlobals->maxClients; index++) {
 			const edict_t* pPlayer = INDEXENT(index);
-
-			if (pPlayer && !FNullEnt(pPlayer) && !pPlayer->free && std::strcmp(bot_names[name_index], STRING(pPlayer->v.netname)) == 0) {
-				used = true;
-				break;
-			}
+			
+            if (pPlayer && !FNullEnt(pPlayer) && !pPlayer->free && strlen(STRING(pPlayer->v.netname)) >= strlen(bot_names[name_index])) {
+				auto suffix = STRING(pPlayer->v.netname) + (strlen(STRING(pPlayer->v.netname)) - strlen(bot_names[name_index]));
+				if(std::strcmp(bot_names[name_index], suffix) == 0) {
+					used = true;
+					break;
+				}
+            }
 		}
 
 		if (used) {

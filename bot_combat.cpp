@@ -617,7 +617,7 @@ static edict_t *BotFindEnemy(bot_t *pBot) {
       if (!pNewEnemy) {
          // check for sniper laser dots
          pent = nullptr;
-         while ((pent = FIND_ENTITY_BY_CLASSNAME(pent, "laser_spot")) != nullptr && !FNullEnt(pent)) {
+         while ((pent = FIND_ENTITY_BY_CLASSNAME(pent, "laser_spot")) != nullptr && !FNullEnt(pent) && !FNullEnt(pent->v.owner)) {
             // ignore your own sniper spot
             if (pent->v.owner == pEdict)
                continue;

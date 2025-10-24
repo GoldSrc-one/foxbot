@@ -3707,7 +3707,7 @@ void BotThink(bot_t* pBot) {
 
 	// keep an up-to-date record of which team the bot is on
 	pBot->current_team = UTIL_GetTeam(pBot->pEdict);
-   if (pBot->current_team < 0 || pBot->current_team != pBot->bot_team - 1) // failed to join the correct team or got autobalanced
+   if (pBot->current_team < 0 || (pBot->bot_team != 5 && pBot->current_team != pBot->bot_team - 1)) // failed to join the correct team or got autobalanced
 	{
 		pBot->not_started = true; // try joining again
 		return;

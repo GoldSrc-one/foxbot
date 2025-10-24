@@ -438,7 +438,7 @@ void BotPickName(char* name_buffer) {
 	int index;
 
 	// see if a name exists from a kicked bot (if so, reuse it)
-	for (index = 0; index < MAX_BOTS; index++) {
+	/*for (index = 0; index < MAX_BOTS; index++) {
 		if (bots[index].is_used == false && bots[index].name[0]) {
 			std::strcpy(name_buffer, bots[index].name);
 
@@ -449,7 +449,7 @@ void BotPickName(char* name_buffer) {
 
 			return;
 		}
-	}
+	}*/
 
 	// it's time to pick a new name at random
 	int name_index = random_long(1, number_names) - 1; // zero based

@@ -57,10 +57,8 @@ FoXBot.sdf
 *.cmd
 *.rsp
 *.i
-*.cfg
 msvc/Debug/*
 msvc/Release/*
-addons/*
 build/*
 build_linux/*
 Rules.depend

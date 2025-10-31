@@ -76,9 +76,9 @@ jobs:
         
         ambuild
 
-        copy post\FoXBot.dll addons\foxbot\foxbot.dll
-        copy post\FoXBot.pdb addons\foxbot\foxbot.pdb
-        Compress-Archive -Path addons\* -Destination addons.zip
+        cp post/FoXBot.dll addons/foxbot/foxbot.dll
+        cp post/FoXBot.pdb addons/foxbot/foxbot.pdb
+        zip -r addons.zip addons/
 
 
     - name: Deploy artifacts

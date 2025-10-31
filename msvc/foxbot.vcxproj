@@ -171,7 +171,6 @@
       <StackReserveSize>
       </StackReserveSize>
       <ImportLibrary>.\Release\FoXBot.lib</ImportLibrary>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>

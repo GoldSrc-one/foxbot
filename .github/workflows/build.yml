@@ -27,7 +27,7 @@ jobs:
 
       - name: Create zip
         run: |
-          copy msvc\Release\FoXBot.dll addons\foxbot\foxbot.dll
+          copy msvc\Release\foxbot.dll addons\foxbot\foxbot.dll
           copy msvc\Release\FoXBot.pdb addons\foxbot\foxbot.pdb
           del addons\foxbot\tfc\waypoints\.gitkeep
           Compress-Archive -Path addons\* -Destination addons.zip

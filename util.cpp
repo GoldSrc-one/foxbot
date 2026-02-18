@@ -438,8 +438,11 @@ int UTIL_GetClass(edict_t* pEntity) {
 }
 
 int UTIL_GetBotIndex(const edict_t* pEdict) {
-   for (int index = 0; index < MAX_BOTS; index++) {
-		if (bots[index].pEdict == pEdict)
+	for (int index = 0; index < MAX_BOTS; index++) {
+		if(!bots[index].is_used)
+			continue;
+
+		if(bots[index].pEdict == pEdict)
 			return index;
 	}
 

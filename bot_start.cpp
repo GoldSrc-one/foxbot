@@ -151,9 +151,9 @@ void BotStartGame(bot_t* pBot) {
 				pBot->bot_class = RANDOM_LONG(1, 9);
 			const int team = UTIL_GetTeam(pEdict);
 
-			if (team_class_limits[team] == -1) // civilian only?
+			if (team != -1 && team_class_limits[team] == -1) // civilian only?
 				pBot->bot_class = 0;            // civilian
-			else {
+			else if(team != -1) {
 				int class_not_allowed;
 
 				if (pBot->bot_class == 10)

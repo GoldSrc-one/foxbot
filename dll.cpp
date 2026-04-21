@@ -2657,8 +2657,7 @@ void StartFrame() { // v7 last frame timing
 				respawn_time = 2.0f;
 		}
 		if (g_GameRules) {
-			char msg[256];
-			char msg2[512];
+			char msg[512];
 			if (need_to_open_cfg) // have we opened foxbot.cfg file yet?
 			{
 				char filename[256];
@@ -2679,7 +2678,7 @@ void StartFrame() { // v7 last frame timing
 						ALERT(at_console, "foxbot.cfg file not found\n");
 				}
 				else {
-					snprintf(msg2, sizeof(msg2), "Executing %s\n", filename);
+					snprintf(msg, sizeof(msg), "Executing %s\n", filename);
 					if (IS_DEDICATED_SERVER())
 						std::printf("%s", msg);
 					else
@@ -2703,14 +2702,14 @@ void StartFrame() { // v7 last frame timing
 				UTIL_BuildFileName(filename, 255, "configs", mapname);
 				bot_cfg_fp = std::fopen(filename, "r");
 				if (bot_cfg_fp != nullptr) {
-					snprintf(msg2, sizeof(msg2), "\nExecuting %s\n", filename);
+					snprintf(msg, sizeof(msg), "\nExecuting %s\n", filename);
 					if (IS_DEDICATED_SERVER())
 						std::printf("%s", msg);
 					else
 						ALERT(at_console, msg);
 				}
 				else { // first say map config not found
-					snprintf(msg2, sizeof(msg2), "\n%s not found\n", filename);
+					snprintf(msg, sizeof(msg), "\n%s not found\n", filename);
 					if (IS_DEDICATED_SERVER())
 						std::printf("%s", msg);
 					else
@@ -2725,7 +2724,7 @@ void StartFrame() { // v7 last frame timing
 							ALERT(at_console, "\nfoxbot.cfg file not found\n");
 					}
 					else {
-						snprintf(msg2, sizeof(msg2), "\nExecuting %s\n", filename);
+						snprintf(msg, sizeof(msg), "\nExecuting %s\n", filename);
 						if (IS_DEDICATED_SERVER())
 							std::printf("%s", msg);
 						else

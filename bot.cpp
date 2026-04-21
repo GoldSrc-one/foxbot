@@ -3259,9 +3259,9 @@ static void BotPickNewClass(bot_t* pBot) {
 
 	int new_class;
 	if (defender_required)
-		new_class = defense_classes[random_long(0, 5)];
+		new_class = defense_classes[random_long(0, sizeof(defense_classes)/sizeof(*defense_classes) - 1)];
 	else
-		new_class = offense_classes[random_long(0, 6)];
+		new_class = offense_classes[random_long(0, sizeof(offense_classes)/sizeof(*offense_classes) - 1)];
 
 	// Check if the chosen class is already at the limit.
 	int class_not_allowed;

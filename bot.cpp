@@ -2234,21 +2234,6 @@ void BotSoundSense(edict_t* pEdict, const char* pszSample, const float fVolume) 
 	if (pEdict == nullptr)
 		return;
 
-	if (std::strncmp("weapons/c4_beep", pszSample, 15) == 0) {
-		for (bot_t &bot : bots) {
-			if (!bot.is_used)
-				continue;
-			
-            job_struct *newJob = InitialiseNewJob(&bot, JOB_CS_BOMB);
-			if (newJob != nullptr) {
-				newJob->waypoint = WaypointFindNearest_V(pEdict->v.origin, 256, bot.current_team);
-				newJob->object = pEdict;
-				newJob->origin = pEdict->v.origin;
-				SubmitNewJob(&bot, JOB_CS_BOMB, newJob);
-			}
-		}
-	}
-
 	const int sourceTeam = UTIL_GetTeam(pEdict);
 	if (sourceTeam == -1)
 		return;

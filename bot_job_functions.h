@@ -74,6 +74,6 @@ int JobBinGrenade(bot_t* pBot);
 int JobDrownRecover(bot_t* pBot);
 int JobMeleeWarrior(bot_t* pBot);
 int JobGraffitiArtist(bot_t *pBot);
-int JobCSBomb(bot_t *pBot);
+int JobHandleGoal(bot_t *pBot);
 
 #endif // BOT_JOB_FUNCTIONS_H

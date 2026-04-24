@@ -79,6 +79,6 @@ int assess_JobBinGrenade(const bot_t* pBot, const job_struct& r_job);
 int assess_JobDrownRecover(const bot_t* pBot, const job_struct& r_job);
 int assess_JobMeleeWarrior(const bot_t* pBot, const job_struct& r_job);
 int assess_JobGraffitiArtist(const bot_t *pBot, const job_struct &r_job);
-int assess_JobCSBomb(const bot_t *pBot, const job_struct &r_job);
+int assess_JobHandleGoal(const bot_t *pBot, const job_struct &r_job);
 
 #endif // JOB_ASSESSOR_FUNCS_H

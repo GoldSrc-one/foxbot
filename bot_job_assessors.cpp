@@ -923,13 +923,13 @@ int assess_JobGraffitiArtist(const bot_t* pBot, const job_struct& r_job) {
 	return jl[JOB_GRAFFITI_ARTIST].basePriority;
 }
 
-// assessment function for the priority of a JOB_GRAFFITI_ARTIST job.
+// assessment function for the priority of a JOB_HANDLE_GOAL job.
 // r_job can be a job you wish to add to the buffer or an existing job.
-int assess_JobCSBomb(const bot_t *pBot, const job_struct &r_job) {
+int assess_JobHandleGoal(const bot_t *pBot, const job_struct &r_job) {
    // recommend the job be removed if it is invalid
    if (r_job.f_bufferedTime < pBot->f_killed_time) {
       return PRIORITY_NONE;
    }
 
-   return jl[JOB_CS_BOMB].basePriority;
+   return jl[JOB_HANDLE_GOAL].basePriority;
 }

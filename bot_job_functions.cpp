@@ -3589,48 +3589,50 @@ int JobGraffitiArtist(bot_t* pBot) {
    return JOB_UNDERWAY;
 }
 
-// This function handles bot behaviour for the JOB_CS_BOMB job.
+// This function handles bot behaviour for the JOB_HANDLE_GOAL job.
 // i.e. the bot will defend or defuse the bomb.
-int JobCSBomb(bot_t *pBot) {
+int JobHandleGoal(bot_t *pBot) {
    job_struct *job_ptr = &pBot->job[pBot->currentJob];
 
-   edict_t *pBomb = job_ptr->object;
-   if (FNullEnt(pBomb) || pBomb->free || (pBomb->v.flags & FL_KILLME))
+   edict_t *pGoal = job_ptr->object;
+   if (FNullEnt(pGoal) || pGoal->free || (pGoal->v.flags & FL_KILLME))
       return JOB_TERMINATED;
 
-   // phase zero - are we defending or defusing
-   if (job_ptr->phase == 0) {
-      bool allyBomb = UTIL_IsAlly(pBot, UTIL_GetTeam(pBomb->v.owner));
-      job_ptr->phase = allyBomb ? -1 : 1;
-   }
+   if (pGoal->v.origin != job_ptr->origin)
+      return JOB_TERMINATED;
 
-   // navigete to the bomb
+   // navigate to the goal
    pBot->goto_wp = job_ptr->waypoint;
-   if (pBot->current_wp == job_ptr->waypoint) {
-      if (pBot->f_use_button_time >= pBot->f_think_time)
-         BotNavigateWaypointless(pBot);
-   } else {
-      // bomb cannot be reached
+   if (pBot->current_wp != job_ptr->waypoint) {
+      // goal cannot be reached
       if (!BotNavigateWaypoints(pBot, false))
          return JOB_TERMINATED;
+      return JOB_UNDERWAY;
    }
 
-   // phase 1 - defuse
-   if (job_ptr->phase == 1) {
-      // look at the bomb
-      if (pBot->current_wp == job_ptr->waypoint)
-         BotSetFacing(pBot, pBomb->v.origin);
+   if (pBot->f_use_button_time < pBot->f_think_time) {
+      BotSetFacing(pBot, pGoal->v.origin);
+      BotNavigateWaypointless(pBot);
+   }
 
-      // duck if getting close
-      if (VectorsNearerThan(pBot->pEdict->v.origin, pBomb->v.origin, 128.0f)) {
-         pBot->pEdict->v.button |= IN_DUCK;
-         pBot->f_duck_time = pBot->f_think_time + 0.1f;
-      }
-
-      // use if very close and in view
-      if (VectorsNearerThan(pBot->pEdict->v.origin, pBomb->v.origin, 64.0f) && BotInFieldOfView(pBot, pBomb->v.origin - (pBot->pEdict->v.origin + pBot->pEdict->v.view_ofs)) < 15) {
-         pBot->pEdict->v.button |= IN_USE;
-         pBot->f_use_button_time = pBot->f_think_time + 0.1f;
+   if (pGoal->v.aiment && ENTINDEX(pGoal->v.aiment)) {
+      // go for the goal entity
+      auto goalEntity = pGoal->v.aiment;
+      auto viewOrigin = pBot->pEdict->v.origin + pBot->pEdict->v.view_ofs;
+      auto goalDir = goalEntity->v.origin - viewOrigin;
+      float dist = fmaxf(goalDir.Length2D(), fabsf(goalDir.z));
+      TraceResult tr = {};
+      if (dist <= 128.f || (UTIL_TraceLine(goalEntity->v.origin, viewOrigin, ignore_monsters, goalEntity, &tr), tr.flFraction == 1.0f || tr.pHit == pBot->pEdict)) {
+         BotSetFacing(pBot, goalEntity->v.origin);
+         // push the buttons if near enough
+         if (dist <= 128.f && (pGoal->v.button & IN_DUCK)) {
+            pBot->pEdict->v.button |= IN_DUCK;
+            pBot->f_duck_time = pBot->f_think_time + 0.1f;
+         }
+         if (dist <= 64.f && (pGoal->v.button & IN_USE)) {
+            pBot->pEdict->v.button |= IN_USE;
+            pBot->f_use_button_time = pBot->f_think_time + 0.1f;
+         }
       }
    }
 

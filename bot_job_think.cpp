@@ -102,7 +102,7 @@ static jobFunctions_struct jf[JOB_TYPE_TOTAL] = {
 	{ assess_JobAvoidEnemy, JobAvoidEnemy }, { assess_JobAvoidAreaDamage, JobAvoidAreaDamage },
 	{ assess_JobInfectedAttack, JobInfectedAttack }, { assess_JobBinGrenade, JobBinGrenade },
 	{ assess_JobDrownRecover, JobDrownRecover }, { assess_JobMeleeWarrior, JobMeleeWarrior },
-	{ assess_JobGraffitiArtist, JobGraffitiArtist }, { assess_JobCSBomb, JobCSBomb },
+	{ assess_JobGraffitiArtist, JobGraffitiArtist }, { assess_JobHandleGoal, JobHandleGoal },
 };
 
 // list of essential data for all known job types
@@ -124,7 +124,7 @@ jobList_struct jl[JOB_TYPE_TOTAL] = {
 	{ 310, "JOB_AVOID_ENEMY" }, { 720, "JOB_AVOID_AREA_DAMAGE" },
 	{ 690, "JOB_INFECTED_ATTACK" }, { 800, "JOB_BIN_GRENADE" },
 	{ 710, "JOB_DROWN_RECOVER" }, { 240, "JOB_MELEE_WARRIOR" }, { 250, "JOB_GRAFFITI_ARTIST" },
-	{ 700, "JOB_CS_BOMB" }
+	{ 700, "JOB_HANDLE_GOAL" }
 };
 
 // This function clears the specified bots job buffer, and thus should
@@ -597,6 +597,39 @@ void BotJobThink(bot_t* pBot) {
 	default:
 		break;
 	}
+
+	if (BufferedJobIndex(pBot, JOB_HANDLE_GOAL) == -1) {
+		edict_t* pGoal = NULL;
+		int numGoals = 0;
+
+		edict_t* pGoalCandidate = NULL;
+		while(!FNullEnt(pGoalCandidate = FIND_ENTITY_BY_CLASSNAME(pGoalCandidate, "bot_goal")))
+			if(!pGoalCandidate->v.owner || pGoalCandidate->v.owner == pBot->pEdict)
+				numGoals++;
+
+		int randomGoal = RANDOM_LONG(0, numGoals - 1);
+        while (!FNullEnt(pGoalCandidate = FIND_ENTITY_BY_CLASSNAME(pGoalCandidate, "bot_goal"))) {
+			if(pGoalCandidate->v.owner && pGoalCandidate->v.owner != pBot->pEdict)
+				continue;
+
+			randomGoal--;
+			if(randomGoal >= 0)
+				continue;
+
+			pGoal = pGoalCandidate;
+			break;
+		}
+        if (pGoal) {
+			newJob = InitialiseNewJob(pBot, JOB_HANDLE_GOAL);
+			if (newJob) {
+				newJob->waypoint = WaypointFindNearest_V(pGoal->v.origin, 256, pBot->current_team);
+				newJob->object = pGoal;
+				newJob->origin = pGoal->v.origin;	
+				if (newJob->waypoint != -1 && SubmitNewJob(pBot, JOB_HANDLE_GOAL, newJob))
+					return;
+			}
+        }
+    }
 
 	// time to choose a defense or offense related job
 	// is the bot a defender on a known defensable map?

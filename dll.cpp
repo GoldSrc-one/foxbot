@@ -2591,6 +2591,9 @@ void StartFrame() { // v7 last frame timing
 			}
 		}
 
+		// run Floyd's Algorithm to generate the from_to matrix...
+		WaypointFloydStep();
+
       if (client_update_time <= gpGlobals->time) {
          client_update_time = gpGlobals->time + 1.0f;
          for (i = 0; i < MAX_BOTS; i++) {

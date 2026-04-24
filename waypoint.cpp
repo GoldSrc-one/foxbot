@@ -114,11 +114,11 @@ static bool is_junction[MAX_WAYPOINTS];
 static unsigned int route_num_waypoints;
 unsigned int* shortest_path[4] = { nullptr, nullptr, nullptr, nullptr };
 unsigned int* from_to[4] = { nullptr, nullptr, nullptr, nullptr };
+unsigned int floyd_step[4] = {0, 0, 0, 0};
 
 static std::FILE* fp;
 
 // FUNCTION PROTOTYPES
-static void WaypointFloyds(unsigned int* shortest_path, unsigned int* from_to);
 static void WaypointRouteInit();
 static bool WaypointLoadVersion4(FILE* bfp, int number_of_waypoints);
 static bool WaypointDeleteAimArtifact(const edict_t* pEntity);
@@ -216,6 +216,7 @@ void WaypointInit() {
 	for (i = 0; i < 4; i++) {
 		shortest_path[i] = nullptr;
 		from_to[i] = nullptr;
+        floyd_step[i] = 0;
 	}
 }
 
@@ -2973,44 +2974,63 @@ void WaypointThink(edict_t* pEntity) {
 
 // Run Floyd's algorithm on the waypoint list to generate the least cost
 // path matrix.
-static void WaypointFloyds(unsigned int* path, unsigned int* to) {
-	unsigned int y, z;
+static void WaypointFloydStepTeam(unsigned int* path, unsigned int* to, int team) {
+	if(floyd_step[team] >= route_num_waypoints)
+		return;
 
-	for (y = 0; y < route_num_waypoints; y++) {
-		for (z = 0; z < route_num_waypoints; z++) {
-			to[y * route_num_waypoints + z] = z;
-		}
-	}
+	if (floyd_step[team] < route_num_waypoints) {
+		unsigned int x = floyd_step[team]++;
+		for (unsigned int y = 0; y < route_num_waypoints; y++) {
+			const unsigned int yRx = y * route_num_waypoints + x;
+			if(path[yRx] == WAYPOINT_UNREACHABLE)
+				continue;
 
-	bool changed = true;
+			for (unsigned int z = 0; z < route_num_waypoints; z++) {
+				// Optimization - didn't need to do that math all over
+				// the place in the [], just do it once.
+				const unsigned int yRz = y * route_num_waypoints + z;
+				const unsigned int xRz = x * route_num_waypoints + z;
 
-	while (changed) {
-		changed = false;
-		for (unsigned int x = 0; x < route_num_waypoints; x++) {
-			for (y = 0; y < route_num_waypoints; y++) {
-				const unsigned int yRx = y * route_num_waypoints + x;
-				for (z = 0; z < route_num_waypoints; z++) {
-					// Optimization - didn't need to do that math all over
-					// the place in the [], just do it once.
-					const unsigned int yRz = y * route_num_waypoints + z;
-					const unsigned int xRz = x * route_num_waypoints + z;
+				if (path[xRz] == WAYPOINT_UNREACHABLE)
+					continue;
 
-					if (path[yRx] == WAYPOINT_UNREACHABLE || path[xRz] == WAYPOINT_UNREACHABLE)
-						continue;
+				unsigned int distance = path[yRx] + path[xRz];
 
-					unsigned int distance = path[yRx] + path[xRz];
+				if (distance > WAYPOINT_MAX_DISTANCE)
+					distance = WAYPOINT_MAX_DISTANCE;
 
-					if (distance > WAYPOINT_MAX_DISTANCE)
-						distance = WAYPOINT_MAX_DISTANCE;
-
-					if (distance < path[yRz] || path[yRz] == WAYPOINT_UNREACHABLE) {
-						path[yRz] = distance;
-						to[yRz] = to[yRx];
-						changed = true;
-					}
+				if (distance < path[yRz] || path[yRz] == WAYPOINT_UNREACHABLE) {
+					path[yRz] = distance;
+					to[yRz] = to[yRx];
 				}
 			}
 		}
+	}
+
+	if (floyd_step[team] < route_num_waypoints)
+		return;
+
+	for (unsigned int a = 0; a < route_num_waypoints; a++) {
+		for (unsigned int b = 0; b < route_num_waypoints; b++)
+			if (path[a * route_num_waypoints + b] == WAYPOINT_UNREACHABLE)
+				to[a * route_num_waypoints + b] = WAYPOINT_UNREACHABLE;
+	}
+	char msg[80];
+	snprintf(msg, sizeof(msg), "FoXBot waypoint path calculations for team %d complete!\n", team + 1);
+	ALERT(at_console, msg);
+}
+
+void WaypointFloydStep() {
+	if(floyd_step[0] >= route_num_waypoints)
+		return;
+   
+	const int subSteps = 1 + ((16 * 1024 * 1024) / (route_num_waypoints * route_num_waypoints));
+	for(int team = 0; team < 4; team++) {
+		if (shortest_path[team] == nullptr || from_to[team] == nullptr)
+		    continue;
+
+		for(int iStep = 0; iStep < subSteps; iStep++)
+			WaypointFloydStepTeam(shortest_path[team], from_to[team], team);
 	}
 }
 
@@ -3113,16 +3133,11 @@ static void WaypointRouteInit() {
 					}
 				}
 
-				// run Floyd's Algorithm to generate the from_to matrix...
-				WaypointFloyds(pShortestPath, pFromTo);
-
-				for (unsigned int a = 0; a < route_num_waypoints; a++) {
-					for (unsigned int b = 0; b < route_num_waypoints; b++)
-						if (pShortestPath[a * route_num_waypoints + b] == WAYPOINT_UNREACHABLE)
-							pFromTo[a * route_num_waypoints + b] = WAYPOINT_UNREACHABLE;
+				for (unsigned int y = 0; y < route_num_waypoints; y++) {
+					for (unsigned int z = 0; z < route_num_waypoints; z++) {
+					  pFromTo[y * route_num_waypoints + z] = z;
+					}
 				}
-				snprintf(msg, sizeof(msg), "FoXBot waypoint path calculations for team %d complete!\n", matrix + 1);
-				ALERT(at_console, msg);
 			}
 		}
 	}

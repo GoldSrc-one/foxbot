@@ -151,6 +151,8 @@ typedef struct {
 // waypoint function prototypes...
 void WaypointInit();
 
+void WaypointFloydStep();
+
 int WaypointFindPath(PATH** pPath, int* path_index, int waypoint_index, int team);
 
 int WaypointFindNearest_E(const edict_t *pEntity, float range, int team);
